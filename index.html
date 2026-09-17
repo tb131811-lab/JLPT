@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeExplorer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background:#f5f8fc;
+  color:#17264a;
+}
+
+button,
+input,
+select{
+  font:inherit;
+}
+
+/* layout */
+
+.app{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:230px;
+  background:#ffffff;
+  border-right:1px solid #e4eaf3;
+  padding:22px 16px;
+  position:fixed;
+  height:100vh;
+  left:0;
+  top:0;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:20px;
+  font-weight:800;
+  margin-bottom:30px;
+}
+
+.logo-icon{
+  width:34px;
+  height:34px;
+  background:linear-gradient(135deg,#2563eb,#60a5fa);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+}
+
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.menu button{
+  border:none;
+  background:transparent;
+  padding:12px 14px;
+  text-align:left;
+  border-radius:10px;
+  cursor:pointer;
+  color:#667085;
+  transition:.2s;
+}
+
+.menu button:hover,
+.menu button.active{
+  background:#eaf2ff;
+  color:#2563eb;
+  font-weight:700;
+}
+
+.sidebar-bottom{
+  position:absolute;
+  bottom:24px;
+  left:16px;
+  right:16px;
+  padding:16px;
+  border-radius:14px;
+  background:#eef5ff;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.main{
+  margin-left:230px;
+  width:calc(100% - 230px);
+}
+
+.topbar{
+  height:68px;
+  background:#fff;
+  border-bottom:1px solid #e8edf5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.search{
+  display:flex;
+  gap:8px;
+}
+
+.search input{
+  width:300px;
+  padding:10px 14px;
+  border:1px solid #d8e0eb;
+  border-radius:9px;
+  outline:none;
+}
+
+.search button{
+  border:none;
+  background:#2563eb;
+  color:white;
+  padding:10px 18px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.content{
+  padding:26px;
+}
+
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+}
+
+.page-title{
+  margin-bottom:22px;
+}
+
+.page-title h1{
+  margin:0 0 8px;
+  font-size:27px;
+}
+
+.page-title p{
+  margin:0;
+  color:#7b8799;
+}
+
+/* cards */
+
+.grid{
+  display:grid;
+  gap:16px;
+}
+
+.kpi-grid{
+  grid-template-columns:repeat(4,1fr);
+}
+
+.card{
+  background:white;
+  border:1px solid #e6ebf2;
+  border-radius:14px;
+  padding:18px;
+  box-shadow:0 3px 10px rgba(28,54,88,.03);
+}
+
+.kpi-title{
+  color:#7d899b;
+  font-size:13px;
+  margin-bottom:7px;
+}
+
+.kpi-value{
+  font-size:25px;
+  font-weight:800;
+}
+
+.kpi-sub{
+  color:#94a0b2;
+  font-size:12px;
+  margin-top:5px;
+}
+
+.positive{
+  color:#10a56d;
+}
+
+.primary{
+  color:#2563eb;
+}
+
+/* rows */
+
+.two-col{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px;
+  margin-top:16px;
+}
+
+.equal-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:16px;
+}
+
+/* table */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  color:#7f8b9d;
+  font-size:12px;
+  font-weight:600;
+  text-align:left;
+  padding:11px 8px;
+  border-bottom:1px solid #e7edf5;
+}
+
+td{
+  padding:12px 8px;
+  font-size:13px;
+  border-bottom:1px solid #eff3f8;
+}
+
+.rank{
+  color:#2563eb;
+  font-weight:800;
+}
+
+.score{
+  color:#2563eb;
+  font-weight:800;
+}
+
+/* insight */
+
+.insight{
+  background:linear-gradient(135deg,#eef5ff,#f8fbff);
+  border:1px solid #d8e7ff;
+}
+
+.insight h3{
+  margin-top:0;
+}
+
+.insight p{
+  line-height:1.75;
+  color:#59677d;
+}
+
+/* chips */
+
+.chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  padding:8px 13px;
+  background:#edf3ff;
+  color:#2563eb;
+  border-radius:30px;
+  font-size:12px;
+  cursor:pointer;
+  border:1px solid transparent;
+}
+
+.chip.active{
+  background:#2563eb;
+  color:white;
+}
+
+/* country header */
+
+.country-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.country-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.flag{
+  font-size:38px;
+}
+
+/* score */
+
+.big-score{
+  display:flex;
+  align-items:end;
+  gap:7px;
+}
+
+.big-score strong{
+  font-size:42px;
+  color:#2563eb;
+}
+
+.progress{
+  height:8px;
+  background:#edf1f6;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  background:#2563eb;
+}
+
+/* seasonal */
+
+.season-tabs{
+  display:flex;
+  gap:9px;
+  margin-bottom:16px;
+}
+
+.season-tabs button{
+  border:1px solid #dbe3ee;
+  background:white;
+  padding:10px 18px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.season-tabs button.active{
+  background:#2563eb;
+  color:white;
+  border-color:#2563eb;
+}
+
+/* report */
+
+.report-preview{
+  background:white;
+  width:350px;
+  min-height:490px;
+  margin:auto;
+  box-shadow:0 10px 35px rgba(0,0,0,.12);
+  padding:40px 32px;
+}
+
+.report-cover{
+  margin-top:90px;
+}
+
+.report-cover h2{
+  font-size:30px;
+}
+
+.report-blue{
+  width:80px;
+  height:7px;
+  background:#2563eb;
+}
+
+/* hero */
+
+.hero{
+  background:linear-gradient(135deg,#f2f7ff,#ffffff);
+  min-height:calc(100vh - 120px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.hero-inner{
+  max-width:850px;
+  text-align:center;
+}
+
+.hero h1{
+  font-size:48px;
+  margin-bottom:18px;
+  line-height:1.25;
+}
+
+.hero h1 span{
+  color:#2563eb;
+}
+
+.hero p{
+  font-size:18px;
+  color:#6f7b8d;
+  line-height:1.7;
+}
+
+.hero-search{
+  display:flex;
+  gap:10px;
+  background:white;
+  padding:10px;
+  border-radius:14px;
+  box-shadow:0 12px 35px rgba(44,78,130,.12);
+  margin:34px auto;
+}
+
+.hero-search input{
+  flex:1;
+  padding:15px;
+  border:none;
+  outline:none;
+}
+
+.hero-search button{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:0 28px;
+  border-radius:9px;
+}
+
+.steps{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin-top:35px;
+  text-align:left;
+}
+
+.step{
+  background:white;
+  padding:20px;
+  border:1px solid #e5ebf4;
+  border-radius:13px;
+}
+
+.step strong{
+  display:block;
+  color:#2563eb;
+  margin-bottom:8px;
+}
+
+/* responsive */
+
+@media(max-width:1000px){
+
+  .sidebar{
+    width:190px;
+  }
+
+  .main{
+    margin-left:190px;
+    width:calc(100% - 190px);
+  }
+
+  .kpi-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .two-col,
+  .equal-col{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+
+  <div class="logo">
+    <div class="logo-icon">↗</div>
+    TradeExplorer
+  </div>
+
+  <div class="menu">
+
+    <button class="active" onclick="showPage('dashboard',this)">
+      ▦ 대시보드
+    </button>
+
+    <button onclick="showPage('country',this)">
+      ◎ 국가별 분석
+    </button>
+
+    <button onclick="showPage('product',this)">
+      ◫ 품목별 분석
+    </button>
+
+    <button onclick="showPage('season',this)">
+      ✦ 계절별 유망 품목
+    </button>
+
+    <button onclick="showPage('compare',this)">
+      ≋ 비교 분석
+    </button>
+
+    <button onclick="showPage('report',this)">
+      ▤ 보고서
+    </button>
+
+  </div>
+
+  <div class="sidebar-bottom">
+    <strong>데이터로 찾는 새로운 수출 기회</strong><br>
+    시장은 성장하지만 한국산 침투율이 낮은 시장을 발굴합니다.
+  </div>
+
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+
+  <div class="search">
+    <input value="330499" placeholder="HS CODE 또는 품목명">
+    <button>검색</button>
+  </div>
+
+  <div>
+    최근 3년 ▾ &nbsp;&nbsp; 👤
+  </div>
+
+</header>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="page active">
+
+<div class="page-title">
+  <h1>HS 330499 · 기타 화장품</h1>
+  <p>전 세계 시장에서 한국이 아직 충분히 진출하지 못한 기회를 분석합니다.</p>
+</div>
+
+<div class="grid kpi-grid">
+
+<div class="card">
+  <div class="kpi-title">분석 대상 국가</div>
+  <div class="kpi-value">195개국</div>
+  <div class="kpi-sub">샘플 데이터</div>
+</div>
+
+<div class="card">
+  <div class="kpi-title">평균 시장 성장률</div>
+  <div class="kpi-value positive">+11.3%</div>
+  <div class="kpi-sub">최근 3년 CAGR</div>
+</div>
+
+<div class="card">
+  <div class="kpi-title">한국 세계시장 점유율</div>
+  <div class="kpi-value primary">8.1%</div>
+  <div class="kpi-sub">HS 330499 기준</div>
+</div>
+
+<div class="card">
+  <div class="kpi-title">Blue Ocean 후보</div>
+  <div class="kpi-value">42개국</div>
+  <div class="kpi-sub">필터 적용 후</div>
+</div>
+
+</div>
+
+<div class="two-col">
+
+<div class="card">
+
+<h3>🏆 한국이 놓치고 있는 시장 TOP 10</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>순위</th>
+<th>국가</th>
+<th>Score</th>
+<th>시장</th>
+<th>침투기회</th>
+<th>한국점유율</th>
+<th>Gap</th>
+<th>CAGR</th>
+</tr>
+</thead>
+
+<tbody id="rankingTable"></tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+<h3>시장 매력도 vs 한국 침투 기회</h3>
+<canvas id="opportunityChart"></canvas>
+</div>
+
+</div>
+
+<div class="equal-col">
+
+<div class="card">
+<h3>주요 국가 Blue Ocean Score</h3>
+<canvas id="rankingChart"></canvas>
+</div>
+
+<div class="card insight">
+
+<h3>🤖 AI 인사이트</h3>
+
+<p>
+현재 분석에서는 UAE, 폴란드, 멕시코가 높은 기회 신호를 보입니다.
+특히 UAE는 시장 성장성과 한국산 추가 침투 가능성이 동시에 높게 나타났습니다.
+</p>
+
+<p>
+멕시코는 Export Gap이 크지만 관세 및 물류 조건 때문에 일부 점수가 감소했습니다.
+따라서 단순 시장 규모보다는 <b>시장 성장성 + 침투 공백 + 현실적인 진입조건</b>을 함께 확인해야 합니다.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- COUNTRY -->
+
+<section id="country" class="page">
+
+<div class="country-header">
+
+<div class="country-name">
+<div class="flag">🇦🇪</div>
+<div>
+<h1>UAE</h1>
+<p>HS 330499 · 기타 화장품</p>
+</div>
+</div>
+
+<button>관심 국가 저장 ♡</button>
+
+</div>
+
+<div class="grid kpi-grid">
+
+<div class="card">
+<div class="kpi-title">Blue Ocean Score</div>
+<div class="kpi-value primary">72.8</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">시장 매력도</div>
+<div class="kpi-value">71.7</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">한국 침투 기회</div>
+<div class="kpi-value">74.1</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">Export Gap</div>
+<div class="kpi-value">6.6%p</div>
+</div>
+
+</div>
+
+<div class="equal-col">
+
+<div class="card">
+<h3>연도별 수입시장 규모</h3>
+<canvas id="countryYearChart"></canvas>
+</div>
+
+<div class="card">
+<h3>월별 수입 추이</h3>
+<canvas id="countryMonthChart"></canvas>
+</div>
+
+</div>
+
+<div class="equal-col">
+
+<div class="card insight">
+
+<h3>🤖 AI 분석 요약</h3>
+
+<p>
+UAE 화장품 시장은 최근 3년간 연평균 약 21% 성장한 것으로 설정되어 있습니다.
+한국산 점유율은 1.5%로 한국의 세계 평균 점유율 8.1%보다 낮습니다.
+</p>
+
+<p>
+이에 따라 6.6%p의 Export Gap이 존재하며,
+한국산 수입 증가율도 높게 설정되어 있어 시장 침투 가능성이 높은 후보로 평가됩니다.
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>핵심 지표</h3>
+
+<table>
+<tr><td>시장규모</td><td><b>$650M</b></td></tr>
+<tr><td>3년 CAGR</td><td class="positive"><b>+21%</b></td></tr>
+<tr><td>한국 점유율</td><td><b>1.5%</b></td></tr>
+<tr><td>한국 세계 점유율</td><td><b>8.1%</b></td></tr>
+<tr><td>Export Gap</td><td><b>6.6%p</b></td></tr>
+<tr><td>한국 수출 증가율</td><td class="positive"><b>+18%</b></td></tr>
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- PRODUCT -->
+
+<section id="product" class="page">
+
+<div class="page-title">
+<h1>HS 330499 · 기타 화장품</h1>
+<p>품목 관점에서 글로벌 시장과 한국의 수출 경쟁력을 분석합니다.</p>
+</div>
+
+<div class="grid kpi-grid">
+
+<div class="card">
+<div class="kpi-title">글로벌 수입규모</div>
+<div class="kpi-value">$28.5B</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">연평균 성장률</div>
+<div class="kpi-value positive">+7.6%</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">한국 수출규모</div>
+<div class="kpi-value">$2.3B</div>
+</div>
+
+<div class="card">
+<div class="kpi-title">Blue Ocean 후보국</div>
+<div class="kpi-value">42개</div>
+</div>
+
+</div>
+
+<div class="equal-col">
+
+<div class="card">
+<h3>글로벌 시장 규모 추이</h3>
+<canvas id="globalChart"></canvas>
+</div>
+
+<div class="card">
+<h3>주요 수입국 TOP 5</h3>
+<canvas id="importCountryChart"></canvas>
+</div>
+
+</div>
+
+</section>
+
+<!-- SEASON -->
+
+<section id="season" class="page">
+
+<div class="page-title">
+<h1>계절별 유망 품목</h1>
+<p>다가오는 시즌에 수요가 증가하면서 한국의 추가 수출 가능성이 높은 품목을 찾습니다.</p>
+</div>
+
+<div class="season-tabs">
+
+<button onclick="seasonChange('spring',this)">🌸 봄</button>
+<button class="active" onclick="seasonChange('summer',this)">☀️ 여름</button>
+<button onclick="seasonChange('fall',this)">🍂 가을</button>
+<button onclick="seasonChange('winter',this)">❄️ 겨울</button>
+
+</div>
+
+<div class="two-col">
+
+<div class="card">
+
+<h3 id="seasonTitle">여름 유망 품목 TOP 5</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>순위</th>
+<th>HS CODE</th>
+<th>품목</th>
+<th>계절 수요</th>
+<th>후보국</th>
+</tr>
+</thead>
+
+<tbody id="seasonTable"></tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h3>월별 수요 패턴</h3>
+
+<canvas id="seasonChart"></canvas>
+
+</div>
+
+</div>
+
+<div class="card insight" style="margin-top:16px">
+
+<h3>🤖 시즌 인사이트</h3>
+
+<p id="seasonInsight">
+여름에는 선케어, 냉방가전, 스포츠웨어 등의 수요 증가 가능성이 높게 설정되어 있습니다.
+월별 수입 데이터와 Google Trends, Export Gap을 함께 활용해 단순 계절 상품이 아닌
+실제 수출 기회가 존재하는 품목을 선별하는 구조입니다.
+</p>
+
+</div>
+
+</section>
+
+<!-- COMPARE -->
+
+<section id="compare" class="page">
+
+<div class="page-title">
+<h1>국가 비교 분석</h1>
+<p>여러 국가의 시장성과 한국의 추가 진출 가능성을 한눈에 비교합니다.</p>
+</div>
+
+<div class="chips">
+
+<span class="chip active">UAE ×</span>
+<span class="chip active">폴란드 ×</span>
+<span class="chip active">멕시코 ×</span>
+<span class="chip">+ 국가 추가</span>
+
+</div>
+
+<div class="card" style="margin-top:16px">
+
+<h3>주요 지표 비교</h3>
+
+<canvas id="compareChart"></canvas>
+
+</div>
+
+<div class="card" style="margin-top:16px">
+
+<table>
+
+<thead>
+<tr>
+<th>국가</th>
+<th>Blue Ocean</th>
+<th>Market</th>
+<th>Penetration</th>
+<th>한국 점유율</th>
+<th>Export Gap</th>
+<th>CAGR</th>
+</tr>
+</thead>
+
+<tbody>
+<tr><td>🇦🇪 UAE</td><td>72.8</td><td>71.7</td><td>74.1</td><td>1.5%</td><td>6.6%p</td><td>21%</td></tr>
+<tr><td>🇵🇱 폴란드</td><td>63.3</td><td>56.3</td><td>71.2</td><td>3.0%</td><td>5.1%p</td><td>18%</td></tr>
+<tr><td>🇲🇽 멕시코</td><td>62.4</td><td>56.9</td><td>68.5</td><td>1.0%</td><td>7.1%p</td><td>16%</td></tr>
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- REPORT -->
+
+<section id="report" class="page">
+
+<div class="page-title">
+<h1>보고서 생성</h1>
+<p>분석 결과를 기반으로 수출 기회 분석 보고서를 구성합니다.</p>
+</div>
+
+<div class="equal-col">
+
+<div class="card">
+
+<h3>보고서 설정</h3>
+
+<p>HS CODE</p>
+<input value="330499" style="width:100%;padding:10px">
+
+<p>대상 국가</p>
+<select style="width:100%;padding:10px">
+<option>UAE</option>
+<option>폴란드</option>
+<option>멕시코</option>
+</select>
+
+<p>포함 항목</p>
+
+<label><input type="checkbox" checked> 시장 분석</label><br><br>
+<label><input type="checkbox" checked> 경쟁국 분석</label><br><br>
+<label><input type="checkbox" checked> Blue Ocean Score</label><br><br>
+<label><input type="checkbox" checked> AI 인사이트</label><br><br>
+<label><input type="checkbox" checked> 계절성 분석</label>
+
+<button style="
+margin-top:25px;
+width:100%;
+padding:14px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:9px;
+">
+PDF 보고서 생성
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="report-preview">
+
+<div class="report-blue"></div>
+
+<div class="report-cover">
+
+<p>TradeExplorer</p>
+
+<h2>
+HS 330499<br>
+기타 화장품
+</h2>
+
+<p>
+UAE 수출 기회 분석 보고서
+</p>
+
+<p style="color:#8b97a8;margin-top:80px">
+Sample Analysis Report
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
+
+</div>
+
+<script>
+
+/* navigation */
+
+function showPage(id, btn){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(p => p.classList.remove("active"));
+
+  document
+    .querySelectorAll(".menu button")
+    .forEach(b => b.classList.remove("active"));
+
+  document.getElementById(id).classList.add("active");
+
+  btn.classList.add("active");
+
+}
+
+
+/* ---------------------------------------
+   SAMPLE BLUE OCEAN DATA
+--------------------------------------- */
+
+const countries = [
+
+{
+ country:"🇦🇪 UAE",
+ market:71.7,
+ penetration:74.1,
+ share:1.5,
+ gap:6.6,
+ cagr:21
+},
+
+{
+ country:"🇵🇱 폴란드",
+ market:56.3,
+ penetration:71.2,
+ share:3.0,
+ gap:5.1,
+ cagr:18
+},
+
+{
+ country:"🇲🇽 멕시코",
+ market:56.9,
+ penetration:68.5,
+ share:1.0,
+ gap:7.1,
+ cagr:16
+},
+
+{
+ country:"🇧🇷 브라질",
+ market:52.7,
+ penetration:64,
+ share:2.1,
+ gap:6.0,
+ cagr:14
+},
+
+{
+ country:"🇸🇦 사우디",
+ market:50.1,
+ penetration:64.3,
+ share:2.5,
+ gap:5.6,
+ cagr:13
+}
+
+];
+
+
+/* blue ocean = geometric mean */
+
+countries.forEach(c => {
+
+ c.blueOcean =
+ Math.sqrt(
+   c.market *
+   c.penetration
+ );
+
+});
+
+
+countries.sort(
+ (a,b)=>b.blueOcean-a.blueOcean
+);
+
+
+/* ranking table */
+
+const rankingTable =
+document.getElementById("rankingTable");
+
+
+countries.forEach((c,i)=>{
+
+ rankingTable.innerHTML += `
+
+ <tr>
+
+ <td class="rank">${i+1}</td>
+
+ <td>${c.country}</td>
+
+ <td class="score">
+ ${c.blueOcean.toFixed(1)}
+ </td>
+
+ <td>${c.market}</td>
+
+ <td>${c.penetration}</td>
+
+ <td>${c.share}%</td>
+
+ <td>${c.gap}%p</td>
+
+ <td>${c.cagr}%</td>
+
+ </tr>
+
+ `;
+
+});
+
+
+/* opportunity scatter */
+
+new Chart(
+ document.getElementById("opportunityChart"),
+ {
+
+ type:"scatter",
+
+ data:{
+
+ datasets:[{
+
+ label:"Countries",
+
+ data:countries.map(c=>({
+
+   x:c.market,
+   y:c.penetration,
+   country:c.country
+
+ })),
+
+ pointRadius:8
+
+ }]
+
+ },
+
+ options:{
+
+ scales:{
+
+  x:{
+   min:0,
+   max:100,
+   title:{
+    display:true,
+    text:"시장 매력도"
+   }
+  },
+
+  y:{
+   min:0,
+   max:100,
+   title:{
+    display:true,
+    text:"한국 침투 기회"
+   }
+  }
+
+ },
+
+ plugins:{
+
+ tooltip:{
+
+ callbacks:{
+
+ label:function(ctx){
+
+ return ctx.raw.country +
+ " : " +
+ ctx.raw.x +
+ " / " +
+ ctx.raw.y;
+
+ }
+
+ }
+
+ }
+
+ }
+
+ }
+
+});
+
+
+/* ranking chart */
+
+new Chart(
+ document.getElementById("rankingChart"),
+ {
+
+ type:"bar",
+
+ data:{
+
+ labels:
+ countries.map(c=>c.country),
+
+ datasets:[{
+
+ label:"Blue Ocean Score",
+
+ data:
+ countries.map(
+  c=>c.blueOcean.toFixed(1)
+ )
+
+ }]
+
+ }
+
+});
+
+
+/* country annual */
+
+new Chart(
+ document.getElementById("countryYearChart"),
+ {
+
+ type:"bar",
+
+ data:{
+
+ labels:["2020","2021","2022","2023"],
+
+ datasets:[{
+
+ label:"시장규모 ($M)",
+
+ data:[420,510,590,650]
+
+ }]
+
+ }
+
+});
+
+
+/* monthly */
+
+new Chart(
+ document.getElementById("countryMonthChart"),
+ {
+
+ type:"line",
+
+ data:{
+
+ labels:[
+ "1월","2월","3월","4월","5월","6월",
+ "7월","8월","9월","10월","11월","12월"
+ ],
+
+ datasets:[{
+
+ label:"월별 수입지수",
+
+ data:[
+ 45,48,55,72,88,82,
+ 95,80,86,92,84,80
+ ],
+
+ tension:.3
+
+ }]
+
+ }
+
+});
+
+
+/* product market */
+
+new Chart(
+ document.getElementById("globalChart"),
+ {
+
+ type:"line",
+
+ data:{
+
+ labels:[
+ "2020","2021","2022","2023"
+ ],
+
+ datasets:[{
+
+ label:"글로벌 시장 ($B)",
+
+ data:[
+ 21.5,
+ 23.8,
+ 26.1,
+ 28.5
+ ],
+
+ tension:.3
+
+ }]
+
+ }
+
+});
+
+
+/* import countries */
+
+new Chart(
+ document.getElementById("importCountryChart"),
+ {
+
+ type:"bar",
+
+ data:{
+
+ labels:[
+ "미국",
+ "중국",
+ "일본",
+ "독일",
+ "프랑스"
+ ],
+
+ datasets:[{
+
+ label:"시장점유율 (%)",
+
+ data:[
+ 18.2,
+ 12.5,
+ 8.7,
+ 6.3,
+ 5.9
+ ]
+
+ }]
+
+ }
+
+});
+
+
+/* seasonal */
+
+const seasonalData = {
+
+ spring:[
+ ["330499","스킨케어","+18%","29"],
+ ["060290","원예식물","+16%","21"],
+ ["620342","경량 의류","+14%","26"],
+ ["420292","여행가방","+13%","19"],
+ ["640399","캐주얼 신발","+12%","24"]
+ ],
+
+ summer:[
+ ["330499","선케어","+28%","32"],
+ ["851660","냉방가전","+24%","28"],
+ ["220210","탄산음료","+19%","21"],
+ ["611030","스포츠웨어","+17%","25"],
+ ["630790","캠핑용품","+15%","19"]
+ ],
+
+ fall:[
+ ["611030","니트웨어","+23%","28"],
+ ["330499","보습 화장품","+18%","31"],
+ ["420292","가방","+16%","20"],
+ ["640399","신발","+14%","24"],
+ ["851679","생활가전","+12%","18"]
+ ],
+
+ winter:[
+ ["611030","니트웨어","+26%","34"],
+ ["851660","난방가전","+24%","28"],
+ ["330499","보습제품","+21%","31"],
+ ["210690","건강식품","+18%","27"],
+ ["630140","담요","+16%","20"]
+ ]
+
+};
+
+
+function renderSeason(season){
+
+ const tbody =
+ document.getElementById("seasonTable");
+
+ tbody.innerHTML="";
+
+ seasonalData[season]
+ .forEach((row,i)=>{
+
+ tbody.innerHTML += `
+
+ <tr>
+ <td>${i+1}</td>
+ <td>${row[0]}</td>
+ <td>${row[1]}</td>
+ <td class="positive">${row[2]}</td>
+ <td>${row[3]}개국</td>
+ </tr>
+
+ `;
+
+ });
+
+}
+
+
+renderSeason("summer");
+
+
+let seasonChart =
+new Chart(
+ document.getElementById("seasonChart"),
+ {
+
+ type:"line",
+
+ data:{
+
+ labels:[
+ "1월","2월","3월",
+ "4월","5월","6월",
+ "7월","8월","9월",
+ "10월","11월","12월"
+ ],
+
+ datasets:[{
+
+ label:"수요 지수",
+
+ data:[
+ 30,32,36,
+ 45,70,88,
+ 96,91,65,
+ 50,39,32
+ ],
+
+ tension:.4
+
+ }]
+
+ }
+
+});
+
+
+function seasonChange(season,btn){
+
+ document
+ .querySelectorAll(".season-tabs button")
+ .forEach(b=>b.classList.remove("active"));
+
+ btn.classList.add("active");
+
+ renderSeason(season);
+
+ const names={
+
+ spring:"봄",
+ summer:"여름",
+ fall:"가을",
+ winter:"겨울"
+
+ };
+
+ document.getElementById("seasonTitle")
+ .innerText =
+ names[season] +
+ " 유망 품목 TOP 5";
+
+}
+
+
+/* compare */
+
+new Chart(
+ document.getElementById("compareChart"),
+ {
+
+ type:"bar",
+
+ data:{
+
+ labels:[
+ "Blue Ocean",
+ "시장 매력도",
+ "한국 침투기회"
+ ],
+
+ datasets:[
+
+ {
+ label:"UAE",
+ data:[72.8,71.7,74.1]
+ },
+
+ {
+ label:"폴란드",
+ data:[63.3,56.3,71.2]
+ },
+
+ {
+ label:"멕시코",
+ data:[62.4,56.9,68.5]
+ }
+
+ ]
+
+ }
+
+});
+
+</script>
+
+</body>
+</html>
